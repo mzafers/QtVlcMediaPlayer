@@ -1,6 +1,6 @@
 It's easy to use. There are 4 steps.
 
-Step 1. Just copy modified QtMultimedia.jar and QtMultimedia-bundled.jar files into your C:\Qt\5.5\android_armv7\jar and/or C:\Qt\5.5\android_x86\jar directory. If you did this before go to next step.
+Step 1. Just copy modified QtMultimedia.jar and QtMultimedia-bundled.jar files into your C:\Qt\5.6\android_armv7\jar and/or C:\Qt\5.6\android_x86\jar directory. If you did this before go to next step.
 
 Step 2. Copy libvlcjni.so file into your project directory.
 
