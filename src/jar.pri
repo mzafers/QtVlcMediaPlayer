@@ -1,8 +1,6 @@
 load(qt_build_paths)
 CONFIG += java
 DESTDIR = $$MODULE_BASE_OUTDIR/jar
-#API_VERSION = android-11
-API_VERSION = android-23
 
 JAVACLASSPATH += $$PWD/src
 
@@ -30,7 +28,7 @@ $$PWD/src/org/qtproject/qt5/android/multimedia/util/AndroidUtil.java \
 $$PWD/src/org/qtproject/qt5/android/multimedia/util/Extensions.java \
 $$PWD/src/org/qtproject/qt5/android/multimedia/util/HWDecoderUtil.java \
 $$PWD/src/org/qtproject/qt5/android/multimedia/util/MediaBrowser.java \
-$$PWD/src/org/qtproject/qt5/android/multimedia/util/VLCUtil.java
+$$PWD/src/org/qtproject/qt5/android/multimedia/util/VLCUtil.java			   
 
 # install
 target.path = $$[QT_INSTALL_PREFIX]/jar

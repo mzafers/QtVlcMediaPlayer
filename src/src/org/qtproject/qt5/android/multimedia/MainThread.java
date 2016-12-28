@@ -1,21 +1,3 @@
-// Eski kod:
-////package android.support.annotation;
-//package org.videolan.libvlc;
-
-//import java.lang.annotation.Annotation;
-//import java.lang.annotation.Retention;
-//import java.lang.annotation.RetentionPolicy;
-//import java.lang.annotation.Target;
-
-//@Retention(RetentionPolicy.CLASS)
-//@Target({java.lang.annotation.ElementType.METHOD, java.lang.annotation.ElementType.CONSTRUCTOR, java.lang.annotation.ElementType.TYPE})
-//public @interface MainThread {}
-
-
-    //------------------------------------------
-
-// Android-23 yeni kod:
-
 /*
  * Copyright (C) 2015 The Android Open Source Project
  *
@@ -31,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//package android.annotation;
-package org.videolan.libvlc;
+package android.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

@@ -1,31 +1,37 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtMultimedia of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:LGPL21$
+** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
 ** Licensees holding valid commercial Qt licenses may use this file in
 ** accordance with the commercial license agreement provided with the
 ** Software or, alternatively, in accordance with the terms contained in
 ** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see http://www.qt.io/terms-conditions. For further
-** information use the contact form at http://www.qt.io/contact-us.
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 or version 3 as published by the Free
-** Software Foundation and appearing in the file LICENSE.LGPLv21 and
-** LICENSE.LGPLv3 included in the packaging of this file. Please review the
-** following information to ensure the GNU Lesser General Public License
-** requirements will be met: https://www.gnu.org/licenses/lgpl.html and
-** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl-3.0.html.
 **
-** As a special exception, The Qt Company gives you certain additional
-** rights. These rights are described in The Qt Company LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or (at your option) the GNU General
+** Public license version 3 or any later version approved by the KDE Free
+** Qt Foundation. The licenses are as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 and LICENSE.GPL3
+** included in the packaging of this file. Please review the following
+** information to ensure the GNU General Public License requirements will
+** be met: https://www.gnu.org/licenses/gpl-2.0.html and
+** https://www.gnu.org/licenses/gpl-3.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -38,7 +44,6 @@ import java.lang.String;
 import java.io.FileInputStream;
 
 // API is level is < 9 unless marked otherwise.
-import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -56,7 +61,9 @@ import org.videolan.libvlc.util.AndroidUtil;
 import java.util.ArrayList;
 import org.videolan.libvlc.util.VLCUtil;
 
-// 16.03.2016 15:52
+// 26.12.2016 14:24
+// Qt 5.7.1
+// libVlc 1.7.5
 public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
 {
     // Native callback functions for MediaPlayer
@@ -71,7 +78,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
     private android.media.MediaPlayer mMediaPlayer = null;
     private Uri mUri = null;
     private final long mID;
-    private final Activity mActivity;
+    private final Context mContext;
     private boolean mMuted = false;
     private int mVolume = 100;
     private static final String TAG = "Qt MediaPlayer";
@@ -220,8 +227,8 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
     }
 
     /*************
-     * Events
-     *************/
+    * Events
+    *************/
     private org.videolan.libvlc.IVLCVout.Callback mIVLCVoutCallback = new MyIVLCVoutCallback();
     private org.videolan.libvlc.MediaPlayer.EventListener mPlayerListener = new MyPlayerListener(this);
 
@@ -278,6 +285,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
     /*************
      * Events
      *************/
+
 
      public static ArrayList<String> getLibOptions()
      {
@@ -337,42 +345,43 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
          return options;
      }
 
-     private static String getResampler()
-     {
-         final VLCUtil.MachineSpecs m = VLCUtil.getMachineSpecs();
-         return m.processors > 2 ? "soxr" : "ugly";
-     }
+    private static String getResampler()
+    {
+        final VLCUtil.MachineSpecs m = VLCUtil.getMachineSpecs();
+        return m.processors > 2 ? "soxr" : "ugly";
+    }
 
-     private static int getDeblocking(int deblocking)
-     {
-         int ret = deblocking;
-         if (deblocking < 0) {
-             /**
-              * Set some reasonable sDeblocking defaults:
-              *
-              * Skip all (4) for armv6 and MIPS by default
-              * Skip non-ref (1) for all armv7 more than 1.2 Ghz and more than 2 cores
-              * Skip non-key (3) for all devices that don't meet anything above
-              */
-             VLCUtil.MachineSpecs m = VLCUtil.getMachineSpecs();
-             if (m == null)
-                 return ret;
-             if ((m.hasArmV6 && !(m.hasArmV7)) || m.hasMips)
-                 ret = 4;
-             else if (m.frequency >= 1200 && m.processors > 2)
-                 ret = 1;
-             else if (m.bogoMIPS >= 1200 && m.processors > 2) {
-                 ret = 1;
-                 Log.d(TAG, "Used bogoMIPS due to lack of frequency info");
-             } else
-                 ret = 3;
-         } else if (deblocking > 4) { // sanity check
-             ret = 3;
-         }
-         return ret;
-     }
+    private static int getDeblocking(int deblocking)
+    {
+        int ret = deblocking;
+        if (deblocking < 0) {
+            /**
+             * Set some reasonable sDeblocking defaults:
+             *
+             * Skip all (4) for armv6 and MIPS by default
+             * Skip non-ref (1) for all armv7 more than 1.2 Ghz and more than 2 cores
+             * Skip non-key (3) for all devices that don't meet anything above
+             */
+            VLCUtil.MachineSpecs m = VLCUtil.getMachineSpecs();
+            if (m == null)
+                return ret;
+            if ((m.hasArmV6 && !(m.hasArmV7)) || m.hasMips)
+                ret = 4;
+            else if (m.frequency >= 1200 && m.processors > 2)
+                ret = 1;
+            else if (m.bogoMIPS >= 1200 && m.processors > 2) {
+                ret = 1;
+                Log.d(TAG, "Used bogoMIPS due to lack of frequency info");
+            } else
+                ret = 3;
+        } else if (deblocking > 4) { // sanity check
+            ret = 3;
+        }
+        return ret;
+    }
 
-    public QtAndroidMediaPlayer(final Activity activity, final long id)
+
+    public QtAndroidMediaPlayer(final Context context, final long id)
     {
         Log.d(TAGVLC, "|--------------------|");
         Log.d(TAGVLC, "|                    |");
@@ -383,7 +392,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
         Log.d(TAGVLC, "|--------------------|");
 
         mID = id;
-        mActivity = activity;
+        mContext = context;
     }
 
     private void setState(int state)
@@ -400,7 +409,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
     {
         if(mLibVLC == null)
         {
-            boolean hasCompatibleCPU = VLCUtil.hasCompatibleCPU((Context)mActivity);
+            boolean hasCompatibleCPU = VLCUtil.hasCompatibleCPU(mContext);
 
             if(hasCompatibleCPU == false)
                 return;
@@ -461,6 +470,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
         }
     }
 
+
     public void start()
     {
         if ((mState & (State.Prepared
@@ -496,20 +506,20 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
         if ((mState & (State.Started | State.Paused | State.PlaybackCompleted)) == 0)
             return;
 
-        if(mVlcModeOn == true)
-        {
-            mMediaPlayerVLC.pause();
-            setState(State.Paused);
-        }
-        else
-        {
-            try {
-                mMediaPlayer.pause();
+            if(mVlcModeOn == true)
+            {
+                mMediaPlayerVLC.pause();
                 setState(State.Paused);
-            } catch (final IllegalStateException e) {
-                Log.d(TAG, "" + e.getMessage());
             }
-        }
+            else
+            {
+                try {
+                    mMediaPlayer.pause();
+                    setState(State.Paused);
+                } catch (final IllegalStateException e) {
+                    Log.d(TAG, "" + e.getMessage());
+                }
+            }
     }
 
 
@@ -607,21 +617,21 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
         if ((mState & (State.Initialized | State.Stopped)) == 0)
            return;
 
-        if(mVlcModeOn == true)
-        {
-            //setState(State.Preparing);
-            setState(State.Prepared);
-            onDurationChangedNative(getDuration(), mID);
-        }
-        else
-        {
-            try {
-                mMediaPlayer.prepareAsync();
-                setState(State.Preparing);
-            } catch (final IllegalStateException e) {
-                Log.d(TAG, "" + e.getMessage());
-            }
-        }
+           if(mVlcModeOn == true)
+           {
+               //setState(State.Preparing);
+               setState(State.Prepared);
+               onDurationChangedNative(getDuration(), mID);
+           }
+           else
+           {
+               try {
+                   mMediaPlayer.prepareAsync();
+                   setState(State.Preparing);
+               } catch (final IllegalStateException e) {
+                   Log.d(TAG, "" + e.getMessage());
+               }
+           }
     }
 
     public String decodeUrl(String url)
@@ -697,7 +707,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
                 final boolean inAssets = (mUri.getScheme().compareTo("assets") == 0);
                 if (inAssets) {
                     final String asset = mUri.getPath().substring(1 /* Remove first '/' */);
-                    final AssetManager am = mActivity.getAssets();
+                    final AssetManager am = mContext.getAssets();
                     afd = am.openFd(asset);
                     final long offset = afd.getStartOffset();
                     final long length = afd.getLength();
@@ -708,7 +718,7 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
                     FileDescriptor fd = fis.getFD();
                     mMediaPlayer.setDataSource(fd);
                 } else {
-                    mMediaPlayer.setDataSource(mActivity, mUri);
+                    mMediaPlayer.setDataSource(mContext, mUri);
                 }
                 setState(State.Initialized);
             } catch (final IOException e) {
@@ -739,65 +749,66 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
             }
         }
 
+
     }
 
 
-   public int getCurrentPosition()
-   {
-       int currentPosition = 0;
-       if ((mState & (State.Idle
-                      | State.Initialized
-                      | State.Prepared
-                      | State.Started
-                      | State.Paused
-                      | State.Stopped
-                      | State.PlaybackCompleted)) == 0) {
-           return currentPosition;
-       }
-
-       if(mVlcModeOn == true)
-       {
-           currentPosition = (int)mMediaPlayerVLC.getPosition();
-       }
-        else
-        {
-            try {
-                currentPosition = mMediaPlayer.getCurrentPosition();
-            } catch (final IllegalStateException e) {
-                Log.d(TAG, "" + e.getMessage());
-            }
+    public int getCurrentPosition()
+    {
+        int currentPosition = 0;
+        if ((mState & (State.Idle
+                       | State.Initialized
+                       | State.Prepared
+                       | State.Started
+                       | State.Paused
+                       | State.Stopped
+                       | State.PlaybackCompleted)) == 0) {
+            return currentPosition;
         }
 
-       return currentPosition;
-   }
+         if(mVlcModeOn == true)
+         {
+             currentPosition = (int)mMediaPlayerVLC.getPosition();
+         }
+         else
+         {
+             try {
+                 currentPosition = mMediaPlayer.getCurrentPosition();
+             } catch (final IllegalStateException e) {
+                 Log.d(TAG, "" + e.getMessage());
+             }
+         }
+
+        return currentPosition;
+    }
 
 
-   public int getDuration()
-   {
-       int duration = 0;
-       if ((mState & (State.Prepared
-                      | State.Started
-                      | State.Paused
-                      | State.Stopped
-                      | State.PlaybackCompleted)) == 0) {
-           return duration;
-       }
-
-       if(mVlcModeOn == true)
-       {
-           duration = (int)mMediaPlayerVLC.getLength();
-       }
-        else
-        {
-            try {
-                duration = mMediaPlayer.getDuration();
-            } catch (final IllegalStateException e) {
-                Log.d(TAG, "" + e.getMessage());
-            }
+    public int getDuration()
+    {
+        int duration = 0;
+        if ((mState & (State.Prepared
+                       | State.Started
+                       | State.Paused
+                       | State.Stopped
+                       | State.PlaybackCompleted)) == 0) {
+            return duration;
         }
 
-       return duration;
-   }
+         if(mVlcModeOn == true)
+         {
+             duration = (int)mMediaPlayerVLC.getLength();
+         }
+         else
+         {
+             try {
+                 duration = mMediaPlayer.getDuration();
+             } catch (final IllegalStateException e) {
+                 Log.d(TAG, "" + e.getMessage());
+             }
+         }
+
+        return duration;
+    }
 
    private float adjustVolume(final int volume)
    {
@@ -849,23 +860,23 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
        return mSurfaceHolder;
    }
 
-   public void setDisplay(SurfaceHolder sh)
-   {
-       mSurfaceHolder = sh;
+    public void setDisplay(SurfaceHolder sh)
+    {
+        mSurfaceHolder = sh;
 
-       if(mVlcModeOn == true)
-       {
-           if(mMediaPlayerVLC == null)
-               initVLC();
-       }
-       else
-       {
-           if ((mState & State.Uninitialized) != 0)
-               return;
+        if(mVlcModeOn == true)
+        {
+            if(mMediaPlayerVLC == null)
+                initVLC();
+        }
+         else
+         {
+             if ((mState & State.Uninitialized) != 0)
+                 return;
 
-           mMediaPlayer.setDisplay(mSurfaceHolder);
-       }
-   }
+             mMediaPlayer.setDisplay(mSurfaceHolder);
+         }
+    }
 
 
    public int getVolume()
@@ -897,7 +908,6 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
                        | State.Error)) == 0) {
             return;
         }
-
         if(mVlcModeOn == false)
             mMediaPlayer.reset();
 
@@ -928,4 +938,5 @@ public class QtAndroidMediaPlayer implements LibVLC.HardwareAccelerationError
 
         setState(State.Uninitialized);
     }
+
 }
